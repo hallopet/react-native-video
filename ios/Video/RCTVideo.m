@@ -384,7 +384,7 @@ static int const RCTVideoUnset = -1;
       
       self->_player = [AVPlayer playerWithPlayerItem:self->_playerItem];
       self->_player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
-      
+      [self touchPlayerLayer]; // Fix Video Size
       [self->_player addObserver:self forKeyPath:playbackRate options:0 context:nil];
       self->_playbackRateObserverRegistered = YES;
       
@@ -411,6 +411,19 @@ static int const RCTVideoUnset = -1;
     }];
   });
   _videoLoadStarted = YES;
+}
+// Fix Video Size
+- (void)touchPlayerLayer
+{
+  if(!_player)return;
+  if(_playerLayer)return;
+
+  _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+  _playerLayer.frame = self.bounds;
+  _playerLayer.needsDisplayOnBoundsChange = YES;
+  
+  [self.layer addSublayer:_playerLayer];
+  self.layer.needsDisplayOnBoundsChange=YES;
 }
 
 - (void)setDrm:(NSDictionary *)drm {
@@ -1414,10 +1427,11 @@ static int const RCTVideoUnset = -1;
 {
   if( _player )
   {
-    _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-    _playerLayer.frame = self.bounds;
-    _playerLayer.needsDisplayOnBoundsChange = YES;
-    
+// Fix Video size
+//     _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+//     _playerLayer.frame = self.bounds;
+//     _playerLayer.needsDisplayOnBoundsChange = YES;
+    [self touchPlayerLayer];
     // to prevent video from being animated when resizeMode is 'cover'
     // resize mode must be set before layer is added
     [self setResizeMode:_resizeMode];
